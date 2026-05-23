@@ -1,0 +1,302 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <!-- ========================= -->
+    <!-- Robot Dimensions          -->
+    <!-- ========================= -->
+
+    <xacro:property name="base_length" value="0.4"/>
+    <xacro:property name="base_width" value="0.4"/>
+    <xacro:property name="base_height" value="0.1"/>
+
+    <xacro:property name="wheel_radius" value="0.035"/>
+    <xacro:property name="wheel_length" value="0.025"/>
+
+    <xacro:property name="caster_radius" value="${wheel_radius / 2.0}"/>
+
+    <!-- ========================= -->
+    <!-- Base Footprint            -->
+    <!-- ========================= -->
+
+    <link name="base_footprint"/>
+
+    <!-- ========================= -->
+    <!-- Base Link                 -->
+    <!-- ========================= -->
+
+    <link name="base_link">
+
+        <visual>
+            <geometry>
+                <box size="${base_length} ${base_width} ${base_height}"/>
+            </geometry>
+
+            <origin
+                xyz="0 0 ${base_height / 2.0}"
+                rpy="0 0 0"/>
+
+            <material name="white"/>
+        </visual>
+
+        <collision>
+            <geometry>
+                <box size="${base_length} ${base_width} ${base_height}"/>
+            </geometry>
+
+            <origin
+                xyz="0 0 ${base_height / 2.0}"
+                rpy="0 0 0"/>
+        </collision>
+
+        <xacro:box_inertia
+            m="5.0"
+            l="${2*base_length}"
+            w="${2*base_width}"
+            h="${2*base_height}"
+            xyz="0 0 ${base_height}"
+            rpy="0 0 0"/>
+
+    </link>
+
+    <!-- ========================= -->
+    <!-- Wheel Macro               -->
+    <!-- ========================= -->
+
+    <xacro:macro name="wheel_link" params="prefix">
+
+        <link name="${prefix}_wheel_link">
+
+            <visual>
+                <geometry>
+                    <cylinder
+                        radius="${wheel_radius}"
+                        length="${wheel_length}"/>
+                </geometry>
+
+                <origin
+                    xyz="0 0 0"
+                    rpy="${pi/2.0} 0 0"/>
+
+                <material name="grey"/>
+            </visual>
+
+            <collision>
+                <geometry>
+                    <cylinder
+                        radius="${wheel_radius}"
+                        length="${wheel_length}"/>
+                </geometry>
+
+                <origin
+                    xyz="0 0 0"
+                    rpy="${pi/2.0} 0 0"/>
+            </collision>
+
+            <xacro:cylinder_inertia
+                m="1.0"
+                r="${2*wheel_radius}"
+                h="${2*wheel_length}"
+                xyz="0 0 0"
+                rpy="${pi/2.0} 0 0"/>
+
+        </link>
+
+    </xacro:macro>
+
+    <!-- ========================= -->
+    <!-- Wheels                    -->
+    <!-- ========================= -->
+
+    <xacro:wheel_link prefix="left"/>
+    <xacro:wheel_link prefix="right"/>
+
+    <!-- ========================= -->
+    <!-- Caster Wheel              -->
+    <!-- ========================= -->
+
+    <link name="caster_wheel_link">
+
+        <visual>
+            <geometry>
+                <sphere radius="${caster_radius}"/>
+            </geometry>
+
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+
+            <material name="grey"/>
+        </visual>
+
+        <collision>
+            <geometry>
+                <sphere radius="${caster_radius}"/>
+            </geometry>
+
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+        </collision>
+
+        <xacro:sphere_inertia
+            m="0.5"
+            r="${2*caster_radius}"
+            xyz="0 0 0"
+            rpy="0 0 0"/>
+
+    </link>
+
+    <!-- ========================= -->
+    <!-- Base Joint                -->
+    <!-- ========================= -->
+
+    <joint name="base_joint" type="fixed">
+
+        <parent link="base_footprint"/>
+        <child link="base_link"/>
+
+        <origin
+            xyz="0 0 ${wheel_radius}"
+            rpy="0 0 0"/>
+
+    </joint>
+
+    <!-- ========================= -->
+    <!-- RIGHT WHEEL FRONT         -->
+    <!-- ========================= -->
+
+    <joint
+        name="base_right_wheel_joint"
+        type="continuous">
+
+        <parent link="base_link"/>
+        <child link="right_wheel_link"/>
+
+        <origin
+            xyz="${base_length / 4.0}
+                 ${-((base_width / 2.0) + (wheel_length/2.0))}
+                 0"
+            rpy="0 0 0"/>
+
+        <axis xyz="0 -1 0"/>
+
+        <limit
+            velocity="100"
+            effort="100"/>
+
+    </joint>
+
+    <!-- ========================= -->
+    <!-- LEFT WHEEL FRONT          -->
+    <!-- ========================= -->
+
+    <joint
+        name="base_left_wheel_joint"
+        type="continuous">
+
+        <parent link="base_link"/>
+        <child link="left_wheel_link"/>
+
+        <origin
+            xyz="${base_length / 4.0}
+                 ${(base_width / 2.0) + (wheel_length/2.0)}
+                 0"
+            rpy="0 0 0"/>
+
+        <axis xyz="0 -1 0"/>
+
+        <limit
+            velocity="100"
+            effort="100"/>
+
+    </joint>
+
+    <!-- ========================= -->
+    <!-- CASTER BACK               -->
+    <!-- ========================= -->
+
+    <joint
+        name="base_caster_wheel_joint"
+        type="fixed">
+
+        <parent link="base_link"/>
+        <child link="caster_wheel_link"/>
+
+        <origin
+            xyz="${-base_length / 3.0}
+                 0
+                 ${-caster_radius}"
+            rpy="0 0 0"/>
+
+    </joint>
+
+    <!-- ========================= -->
+    <!-- LIDAR LINK                -->
+    <!-- ========================= -->
+
+    <link name="laser">
+
+        <visual>
+            <geometry>
+                <cylinder
+                    radius="0.03"
+                    length="0.05"/>
+            </geometry>
+
+            <origin
+                xyz="0 0 0"
+                rpy="0 0 0"/>
+
+            <material name="black"/>
+        </visual>
+
+        <collision>
+            <geometry>
+                <cylinder
+                    radius="0.03"
+                    length="0.05"/>
+            </geometry>
+
+            <origin
+                xyz="0 0 0"
+                rpy="0 0 0"/>
+        </collision>
+
+        <inertial>
+
+            <mass value="0.1"/>
+
+            <origin
+                xyz="0 0 0"
+                rpy="0 0 0"/>
+
+            <inertia
+                ixx="0.0001"
+                ixy="0.0"
+                ixz="0.0"
+                iyy="0.0001"
+                iyz="0.0"
+                izz="0.0001"/>
+
+        </inertial>
+
+    </link>
+
+    <!-- ========================= -->
+    <!-- LIDAR FRONT TOP           -->
+    <!-- ========================= -->
+
+    <joint
+        name="laser_joint"
+        type="fixed">
+
+        <parent link="base_link"/>
+        <child link="laser"/>
+
+        <!-- Top of front wheel side -->
+        <origin
+            xyz="${base_length / 4.0}
+                 0
+                 ${base_height + 0.05}"
+            rpy="0 0 0"/>
+
+    </joint>
+
+</robot>
